@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from database import Base, engine
-from app.api import candidates, jobs
+from app.api import analysis, candidates, jobs, ai, test_ai
 
 app = FastAPI(title="Affinity Matching API - IA")
 
@@ -14,6 +14,9 @@ def on_startup():
 # Incluir routers
 app.include_router(candidates.router)
 app.include_router(jobs.router)
+app.include_router(analysis.router)
+app.include_router(ai.router)
+app.include_router(test_ai.router)
 
 
 @app.get("/")

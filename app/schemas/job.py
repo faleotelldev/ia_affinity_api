@@ -1,15 +1,16 @@
+# app/schemas/job.py
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class JobBase(BaseModel):
-    title: str = Field(..., min_length=2, max_length=150)
-    description: Optional[str] = Field(default=None, max_length=1000)
-    location: Optional[str] = Field(default=None, max_length=150)
-    salary_from: Optional[int] = Field(default=None, ge=0)
-    salary_to: Optional[int] = Field(default=None, ge=0)
+    title: str
+    description: str
+    location: Optional[str] = None
+    salary_from: Optional[int] = None
+    salary_to: Optional[int] = None
 
 
 class JobCreate(JobBase):
@@ -17,17 +18,25 @@ class JobCreate(JobBase):
 
 
 class JobUpdate(BaseModel):
-    title: Optional[str] = Field(default=None, min_length=2, max_length=150)
-    description: Optional[str] = Field(default=None, max_length=1000)
-    location: Optional[str] = Field(default=None, max_length=150)
-    salary_from: Optional[int] = Field(default=None, ge=0)
-    salary_to: Optional[int] = Field(default=None, ge=0)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    salary_from: Optional[int] = None
+    salary_to: Optional[int] = None
 
 
 class JobRead(JobBase):
     id: int
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class JobMatch(BaseModel):
+    job: JobRead
+    score: float
 
     class Config:
         from_attributes = True

@@ -1,5 +1,5 @@
 from typing import List
-
+'''
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -14,7 +14,24 @@ from app.services.candidate_service import (
 )
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
+'''
+# app/api/candidates.py
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
+from database import SessionLocal
+from app.schemas.candidate import CandidateRead, CandidateCreate, CandidateUpdate, CandidateMatch
+from app.schemas.job import JobMatch
+from app.services.affinity_service import get_best_jobs_for_candidate
+from app.services.candidate_service import (
+    create_candidate,
+    list_candidates,
+    get_candidate,
+    update_candidate,
+    delete_candidate,
+)
+
+router = APIRouter(prefix="/candidates", tags=["Candidates"])
 
 def get_db():
     db = SessionLocal()
@@ -31,6 +48,7 @@ def get_db():
 #    data: CandidateCreate, db: Session = Depends(get_db)
 #):
 #    return create_candidate(db, data)
+
 @router.post("/", response_model=CandidateRead, status_code=status.HTTP_201_CREATED)
 def create_candidate_endpoint(candidate: CandidateCreate, db: Session = Depends(get_db)):
     try:
@@ -83,3 +101,22 @@ def delete_candidate_endpoint(candidate_id: int, db: Session = Depends(get_db)):
             detail="Candidate not found",
         )
     # 204 no content → no body
+
+@router.get("/{candidate_id}/matches", response_model=list[JobMatch])
+def get_candidate_matches(
+    candidate_id: int,
+    min_score: float = Query(0, ge=0, le=100),
+    limit: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    matches = get_best_jobs_for_candidate(
+        db=db,
+        candidate_id=candidate_id,
+        min_score=min_score,
+        limit=limit,
+    )
+
+    result: list[JobMatch] = []
+    for job, score in matches:
+        result.append(JobMatch(job=job, score=score))
+    return result   

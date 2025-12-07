@@ -1,4 +1,6 @@
-from app.models.candidate import Candidate
-from app.models.job import Job
+# app/models/__init__.py
+from .candidate import Candidate
+from .job import Job
+from .analysis_result import AnalysisResult
 
-__all__ = ["Candidate", "Job"]
+__all__ = ["Candidate", "Job", "AnalysisResult"]

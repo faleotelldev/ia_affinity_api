@@ -1,0 +1,149 @@
+
+```markdown
+#  IA Affinity API — Sprint 2
+
+##  Descripción general
+
+**IA Affinity API** es un sistema que calcula el nivel de afinidad entre candidatos y ofertas de trabajo usando:
+
+-  Algoritmo clásico de IA basado en similitud de habilidades.
+-  Pipeline con agentes (Extractor, Procesador y Scorer).
+-  Persistencia y consultas de resultados.
+-  Compatible con Azure SQL/SQL Server.
+
+Construido con **FastAPI + SQLAlchemy**, estructurado bajo una arquitectura modular con un **Crew Orchestrator** que controla el flujo de agentes.
+
+---
+
+## Arquitectura del Pipeline
+
+```
+
+Candidato + Oferta
+│
+▼
++-------------------+
+|  ExtractorAgent   |  ← Extrae skills con IA (opcional)
++-------------------+
+│
+▼
++-------------------+
+| ProcessorAgent    |  ← Normaliza texto y habilidades
++-------------------+
+│
+▼
++-------------------+
+| AffinityScorer    |  ← Calcula afinidad
++-------------------+
+│
+▼
++-------------------------+
+|   Persistencia en DB    |
++-------------------------+
+
+````
+
+➡ Orquestado por: `CrewOrchestrator`
+
+---
+
+## Organización del proyecto
+
+| Componente | Ubicación | Descripción |
+|------------|-----------|-------------|
+| ExtractorAgent | `app/agents/extractor_agent.py` | Extrae skills vía prompt |
+| ProcessorAgent | `app/agents/processor_agent.py` | Limpia y normaliza |
+| AffinityScorerAgent | `app/agents/affinity_scorer_agent.py` | Calcula afinidad (IA clásica) |
+| CrewOrchestrator | `app/agents/orchestrator.py` | Orquesta el pipeline |
+| AnalysisRepository | `app/repositories/analysis_repository.py` | Guarda y consulta resultados |
+| AnalysisService | `app/services/analysis_service.py` | Lógica de negocio |
+| Endpoints | `app/api/analysis.py` | API pública |
+
+---
+
+## Endpoints del Sprint 2
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/analysis` | Ejecuta pipeline y guarda en DB |
+| `GET` | `/analysis/{id}` | Consulta un resultado guardado |
+| `GET` | `/analysis/classic/{candidate}/{job}` | Afinidad clásica sin pipeline |
+| `GET` | `/analysis/compare/{candidate}/{job}` | Compara clásico vs pipeline |
+
+### Ejemplo `POST /analysis`
+
+#### Request
+```json
+{
+  "candidate_id": 3,
+  "job_id": 2
+}
+````
+
+#### Response
+
+```json
+{
+  "status": "saved",
+  "analysis_id": 5,
+  "affinity_score": 82.5,
+  "match_reason": "python, fastapi",
+  "features": "{\"candidate_skills_processed\": [\"python\", \"sql\"], \"job_skills_processed\": [\"python\", \"fastapi\", \"sql\"]}"
+}
+```
+
+---
+
+##  Base de datos — Tabla `analysis_results`
+
+| Campo            | Tipo      |
+| ---------------- | --------- |
+| `id`             | int (PK)  |
+| `candidate_id`   | FK        |
+| `job_id`         | FK        |
+| `affinity_score` | float     |
+| `match_reason`   | varchar   |
+| `features_json`  | text/json |
+| `created_at`     | datetime  |
+
+---
+
+##  Algoritmo Clásico Implementado (IA Clásica)
+
+El **Affinity Score** se calcula con:
+
+```
+matching = candidato ∩ oferta
+score = (matching / skills_de_la_oferta) * 100
+```
+
+ Ejemplo:
+
+```
+Candidato: python, sql, docker
+Oferta: sql, python, fastapi
+
+Matching = {python, sql}
+Score = (2 / 3) * 100 = 66.6%
+```
+
+Implementado en: `app/agents/affinity_scorer_agent.py`
+
+---
+
+## Estado del Sprint 2 (Checklist)
+
+| Historia                       | Estado |
+| ------------------------------ | ------ |
+| US-05: ExtractorAgent          | ✔️     |
+| US-06: ProcessorAgent          | ✔️     |
+| US-07: AffinityScorerAgent     | ✔️     |
+| US-08: POST /analysis pipeline | ✔️     |
+| US-09: Persistencia en DB      | ✔️     |
+| US-10: Consulta de análisis    | ✔️     |
+| US-14: Algoritmo IA Clásica    | ✔️     |
+
+---
+
+
+

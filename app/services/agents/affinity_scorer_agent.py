@@ -1,17 +1,22 @@
+# app/services/agents/affinity_scorer_agent.py
+from app.services.agents.processor_agent import ProcessedFeatures
+
+
 class AffinityScorerAgent:
-    """
-    Calcula un score sencillo a partir de las features procesadas.
-    """
+    def score(self, features: ProcessedFeatures) -> tuple[float, str]:
+        if not features.job_keywords:
+            return 0.0, "Oferta sin descripción detallada"
 
-    def score(self, features: dict) -> tuple[float, str]:
-        overlap_ratio = features.get("skill_overlap_ratio", 0.0)
-        years = features.get("years_experience", 0)
+        matches = [
+            skill for skill in features.candidate_skills
+            if skill in features.job_keywords
+        ]
+        base_score = len(matches) / len(features.job_keywords)
 
-        # Fórmula muy simple para el sprint 2
-        score = overlap_ratio * 70 + min(years, 10) * 3
+        exp_bonus = min(features.years_experience / 10, 1.0)
 
-        reason = (
-            f"Coincidencia de habilidades: {overlap_ratio:.2f}. "
-            f"Años de experiencia considerados: {years}."
-        )
-        return float(score), reason
+        score = (0.7 * base_score) + (0.3 * exp_bonus)
+        score = round(score * 100, 2)
+
+        reason = f"{len(matches)} habilidades coinciden; experiencia: {features.years_experience} años"
+        return score, reason

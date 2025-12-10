@@ -1,20 +1,16 @@
 # app/models/candidate.py
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.sql import func
+from app.database import Base
 
-from app.database import Base  # importa Base desde database.py (sin app.)
 
 class Candidate(Base):
-    __tablename__ = "candidates"
+    __tablename__ = "candidates"   # dbo.candidates
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
-    skills = Column(String, nullable=True)
-    years_experience = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
-    )
+    id = Column("id", Integer, primary_key=True, index=True)
+    name = Column("name", String(255), nullable=False)
+    email = Column("email", String(255), nullable=False)
+    skills = Column("skills", String(1000), nullable=True)
+    years_experience = Column("years_experience", Integer, nullable=False)
+    created_at = Column("created_at", DateTime(timezone=True), nullable=True, default=datetime.utcnow)
+    updated_at = Column("updated_at", DateTime(timezone=True), nullable=True)

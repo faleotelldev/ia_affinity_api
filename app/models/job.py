@@ -1,17 +1,17 @@
+# app/models/job.py
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.sql import func
-
 from app.database import Base
 
 
 class Job(Base):
-    __tablename__ = "jobs"
+    __tablename__ = "jobs"   # dbo.jobs
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    location = Column(String, nullable=True)
-    salary_from = Column(Integer, nullable=True)
-    salary_to = Column(Integer, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), nullable=True)
+    id = Column("id", Integer, primary_key=True, index=True)
+    title = Column("title", String(255), nullable=False)
+    description = Column("description", String(2000), nullable=True)
+    location = Column("location", String(255), nullable=True)
+    salary_from = Column("salary_from", Integer, nullable=True)
+    salary_to = Column("salary_to", Integer, nullable=True)
+    created_at = Column("created_at", DateTime(timezone=True), nullable=True, default=datetime.utcnow)
+    updated_at = Column("updated_at", DateTime(timezone=True), nullable=True)

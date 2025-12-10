@@ -1,3 +1,4 @@
+# app/api/jobs.py
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -5,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.job import JobCreate, JobUpdate, JobRead
-from app.schemas.analysis import AnalysisRead
+from app.schemas.analysis import AnalysisResultRead
 from app.services import job_service
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -45,6 +46,6 @@ def delete_job(job_id: int, db: Session = Depends(get_db)):
     return None
 
 
-@router.get("/{job_id}/matches", response_model=List[AnalysisRead])
+@router.get("/{job_id}/matches", response_model=List[AnalysisResultRead])
 def get_job_matches(job_id: int, db: Session = Depends(get_db)):
     return job_service.get_job_matches(db, job_id)

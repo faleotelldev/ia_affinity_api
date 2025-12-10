@@ -1,13 +1,12 @@
 # app/schemas/candidate.py
-from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class CandidateBase(BaseModel):
     name: str
     email: EmailStr
-    skills: Optional[str] = None
+    skills: str | None = None
     years_experience: int
 
 
@@ -16,15 +15,15 @@ class CandidateCreate(CandidateBase):
 
 
 class CandidateUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    skills: Optional[str] = None
-    years_experience: Optional[int] = None
+    name: str | None = None
+    email: EmailStr | None = None
+    skills: str | None = None
+    years_experience: int | None = None
 
 
 class CandidateRead(CandidateBase):
     id: int
-    created_at: Optional[datetime] = None   # <- CAMBIO IMPORTANTE
-    updated_at: Optional[datetime] = None   # por coherencia
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,4 +1,3 @@
-# app/schemas/job.py
 from datetime import datetime
 from typing import Optional
 
@@ -27,16 +26,8 @@ class JobUpdate(BaseModel):
 
 class JobRead(JobBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
-class JobMatch(BaseModel):
-    job: JobRead
-    score: float
+    created_at: datetime
+    updated_at: Optional[datetime]
 
     class Config:
         from_attributes = True

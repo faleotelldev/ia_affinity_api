@@ -1,30 +1,14 @@
-# app/schemas/__init__.py
-from .candidate import (
-    CandidateBase,
-    CandidateCreate,
-    CandidateUpdate,
-    CandidateRead,
-    CandidateMatch,
-)
-from .job import JobBase, JobCreate, JobUpdate, JobRead, JobMatch
-from .analysis_result import (
-    AnalysisResultBase,
-    AnalysisResultCreate,
-    AnalysisResultRead,
-)
+from .candidate import CandidateCreate, CandidateUpdate, CandidateRead
+from .job import JobCreate, JobUpdate, JobRead
+from .analysis import AnalysisCreate, AnalysisRead
 
 __all__ = [
-    "CandidateBase",
     "CandidateCreate",
     "CandidateUpdate",
     "CandidateRead",
-    "CandidateMatch",
-    "JobBase",
     "JobCreate",
     "JobUpdate",
     "JobRead",
-    "JobMatch",
-    "AnalysisResultBase",
-    "AnalysisResultCreate",
-    "AnalysisResultRead",
+    "AnalysisCreate",
+    "AnalysisRead",
 ]

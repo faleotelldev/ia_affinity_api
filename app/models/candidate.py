@@ -1,25 +1,20 @@
 # app/models/candidate.py
-from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
-from database import Base
-
+from app.database import Base  # importa Base desde database.py (sin app.)
 
 class Candidate(Base):
     __tablename__ = "candidates"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
     skills = Column(String, nullable=True)
-    years_experience = Column(Integer, nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=True)
-    updated_at = Column(DateTime(timezone=True), nullable=True)
-
-    # Relationship to analysis_results
-    analysis_results = relationship(
-        "AnalysisResult",
-        back_populates="candidate",
-        cascade="all, delete-orphan",
+    years_experience = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
     )

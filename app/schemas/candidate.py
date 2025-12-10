@@ -1,8 +1,7 @@
 # app/schemas/candidate.py
-from datetime import datetime
 from typing import Optional
-
-from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class CandidateBase(BaseModel):
@@ -25,16 +24,7 @@ class CandidateUpdate(BaseModel):
 
 class CandidateRead(CandidateBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None   # <- CAMBIO IMPORTANTE
+    updated_at: Optional[datetime] = None   # por coherencia
 
-    class Config:
-        from_attributes = True
-
-
-class CandidateMatch(BaseModel):
-    candidate: CandidateRead
-    score: float
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -1,8 +1,11 @@
+import os
+import urllib.parse
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
-import os, urllib.parse
 
+# Cargar variables de entorno desde .env
 load_dotenv()
 
 DB_SERVER = os.getenv("DB_SERVER")
@@ -12,6 +15,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 18 for SQL Server")
 
+# Cadena ODBC
 odbc_str = (
     f"Driver={{{DB_DRIVER}}};"
     f"Server={DB_SERVER},{DB_PORT};"
@@ -26,6 +30,15 @@ odbc_str = (
 params = urllib.parse.quote_plus(odbc_str)
 DATABASE_URL = f"mssql+pyodbc:///?odbc_connect={params}"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

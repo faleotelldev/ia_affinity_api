@@ -1,51 +1,44 @@
-# app/api/analysis.py
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from app.schemas.analysis_result import AnalysisResultRead
-from app.models import AnalysisResult
-from app.services.affinity_service import analyze_candidate_job
+from app.database import get_db
+from app.schemas.analysis import AnalysisCreate, AnalysisRead
+from app.services import analysis_service
 
-router = APIRouter(prefix="/analysis", tags=["Analysis"])
-
-
-@router.post("/run", response_model=AnalysisResultRead)
-def run_analysis(
-    candidate_id: int,
-    job_id: int,
-    db: Session = Depends(SessionLocal),
-):
-    try:
-        result = analyze_candidate_job(db, candidate_id=candidate_id, job_id=job_id)
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+router = APIRouter(prefix="/analysis", tags=["analysis"])
 
 
-@router.get("/candidate/{candidate_id}", response_model=list[AnalysisResultRead])
-def list_candidate_analysis(
-    candidate_id: int,
-    db: Session = Depends(SessionLocal),
-):
-    results = (
-        db.query(AnalysisResult)
-        .filter(AnalysisResult.candidate_id == candidate_id)
-        .order_by(AnalysisResult.created_at.desc())
-        .all()
-    )
-    return results
+@router.post("/", response_model=AnalysisRead, status_code=status.HTTP_201_CREATED)
+def run_analysis(payload: AnalysisCreate, db: Session = Depends(get_db)):
+    """
+    Ejecuta el pipeline completo (Extractor, Processor, AffinityScorer)
+    y persiste el resultado en analysis_results.
+    """
+    result = analysis_service.run_affinity_pipeline(db, payload.candidate_id, payload.job_id)
+    return result
 
 
-@router.get("/job/{job_id}", response_model=list[AnalysisResultRead])
-def list_job_analysis(
-    job_id: int,
-    db: Session = Depends(SessionLocal),
-):
-    results = (
-        db.query(AnalysisResult)
-        .filter(AnalysisResult.job_id == job_id)
-        .order_by(AnalysisResult.created_at.desc())
-        .all()
-    )
-    return results
+@router.post("/run", response_model=AnalysisRead, status_code=status.HTTP_201_CREATED)
+def run_analysis_alias(payload: AnalysisCreate, db: Session = Depends(get_db)):
+    # Alias por si el profesor quiere /analysis/run
+    return analysis_service.run_affinity_pipeline(db, payload.candidate_id, payload.job_id)
+
+
+@router.get("/{analysis_id}", response_model=AnalysisRead)
+def get_analysis(analysis_id: int, db: Session = Depends(get_db)):
+    result = analysis_service.get_analysis_by_id(db, analysis_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Analysis not found")
+    return result
+
+
+@router.get("/candidate/{candidate_id}", response_model=List[AnalysisRead])
+def list_candidate_analysis(candidate_id: int, db: Session = Depends(get_db)):
+    return analysis_service.get_analysis_by_candidate(db, candidate_id)
+
+
+@router.get("/job/{job_id}", response_model=List[AnalysisRead])
+def list_job_analysis(job_id: int, db: Session = Depends(get_db)):
+    return analysis_service.get_analysis_by_job(db, job_id)

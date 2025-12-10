@@ -1,48 +1,67 @@
+# app/services/candidate_service.py
 from typing import List, Optional
-
 from sqlalchemy.orm import Session
 
 from app.models.candidate import Candidate
 from app.schemas.candidate import CandidateCreate, CandidateUpdate
 
+'''
+def get_candidates(db: Session, skip: int = 0, limit: int = 100) -> List[Candidate]:
+    return (
+        db.query(Candidate)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+'''
+def get_candidates(db: Session, skip: int = 0, limit: int = 100):
+    return (
+        db.query(Candidate)
+        .order_by(Candidate.id)      # 👈 CLAVE PARA MSSQL
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
-def create_candidate(db: Session, data: CandidateCreate) -> Candidate:
-    candidate = Candidate(**data.model_dump())
-    db.add(candidate)
-    db.commit()
-    db.refresh(candidate)
-    return candidate
 
-
-def list_candidates(db: Session) -> List[Candidate]:
-    return db.query(Candidate).all()
-
-
-def get_candidate(db: Session, candidate_id: int) -> Optional[Candidate]:
+def get_candidate_by_id(db: Session, candidate_id: int) -> Optional[Candidate]:
     return db.query(Candidate).filter(Candidate.id == candidate_id).first()
 
 
+def create_candidate(db: Session, candidate_in: CandidateCreate) -> Candidate:
+    db_candidate = Candidate(
+        name=candidate_in.name,
+        email=candidate_in.email,
+        skills=candidate_in.skills,
+        years_experience=candidate_in.years_experience,
+    )
+    db.add(db_candidate)
+    db.commit()
+    db.refresh(db_candidate)
+    return db_candidate
+
+
 def update_candidate(
-    db: Session, candidate_id: int, data: CandidateUpdate
+    db: Session, candidate_id: int, candidate_in: CandidateUpdate
 ) -> Optional[Candidate]:
-    candidate = get_candidate(db, candidate_id)
-    if not candidate:
+    db_candidate = get_candidate_by_id(db, candidate_id)
+    if not db_candidate:
         return None
 
-    update_data = data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(candidate, key, value)
+    data = candidate_in.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(db_candidate, field, value)
 
     db.commit()
-    db.refresh(candidate)
-    return candidate
+    db.refresh(db_candidate)
+    return db_candidate
 
 
 def delete_candidate(db: Session, candidate_id: int) -> bool:
-    candidate = get_candidate(db, candidate_id)
-    if not candidate:
+    db_candidate = get_candidate_by_id(db, candidate_id)
+    if not db_candidate:
         return False
 
-    db.delete(candidate)
+    db.delete(db_candidate)
     db.commit()
     return True

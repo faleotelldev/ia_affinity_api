@@ -1,3 +1,3 @@
-from app.api import candidates, jobs
+from . import candidates, jobs, analysis
 
-__all__ = ["candidates", "jobs"]
+__all__ = ["candidates", "jobs", "analysis"]

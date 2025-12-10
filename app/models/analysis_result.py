@@ -1,9 +1,7 @@
-# app/models/analysis_result.py
-from datetime import datetime
 from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
-from database import Base
+from app.database import Base
 
 
 class AnalysisResult(Base):
@@ -13,9 +11,6 @@ class AnalysisResult(Base):
     candidate_id = Column(Integer, ForeignKey("candidates.id"), nullable=False)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
     affinity_score = Column(Float, nullable=False)
-    match_reason = Column(String, nullable=True)
-    features_json = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), nullable=True)
-
-    candidate = relationship("Candidate", back_populates="analysis_results")
-    job = relationship("Job", back_populates="analysis_results")
+    match_reason = Column(String, nullable=False)
+    features_json = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
